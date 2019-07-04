@@ -1,0 +1,210 @@
+项目：搭建学生管理系统
+1.建立数据库
+  mysql -uroot -p
+  CREATE DATABASE student_sys
+
+2.根据需求建立《学生信息表》《学生成绩表》
+  学生信息表
+  CREATE TABLE IF NOT EXISTS `studentinfo`(
+   `stu_id` INT UNSIGNED AUTO_INCREMENT,
+   `stu_name` VARCHAR(25) NOT NULL,
+   `stu_sex` VARCHAR(10) NOT NULL,
+   `stu_num` VARCHAR(100)NOT NULL,
+   `stu_code` VARCHAR(100)NOT NULL,
+   PRIMARY KEY ( `stu_id` )
+  )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+  学生成绩表
+  CREATE TABLE IF NOT EXISTS `studentrecord`(
+   `record_id` INT UNSIGNED AUTO_INCREMENT,
+   `stu_num` VARCHAR(100)NOT NULL,
+   `match_record` INT NOT NULL,
+   `datasec_record` INT NOT NULL,
+   PRIMARY KEY ( `record_id` )
+  )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+  USE student_sys;
+  SHOW TABLES;
+  SHOW COLUMNS FROM studentinfo;
+  SHOW COLUMNS FROM studentrecord;
+
+  /*****************************************/
+  /*****************************************/
+  --插入数据
+  /* 学生信息 */
+  单条数据输入：
+  INSERT INTO studentinfo
+  ( stu_name,stu_sex,stu_num,stu_code)
+   VALUES
+  ("李三", "男","AT08474","62513257312636");
+
+
+  多条数据输入：
+   INSERT INTO studentinfo
+  (stu_name,stu_sex,stu_num,stu_code)
+   VALUES
+  ("黄三", "男","AT08908","67346873246878"),
+  ("张小丽", "女","AT08490","73984732984783"); 
+
+  /* 学生成绩 */
+  多条数据输入：
+   INSERT INTO studentrecord
+  (record_id, stu_num,match_record,datasec_record)
+   VALUES
+  ("", "AT08908", "80","85"),
+  ("", "AT08474", "90","70"),
+  ("", "AT08490", "95","95"); 
+
+  --查询数据
+  SELECT COUNT(*) FROM studentinfo;
+  SELECT * FROM studentinfo;
+  SELECT stu_id,stu_name,stu_sex,stu_num,stu_code FROM studentinfo;
+
+  ------ 显示条数查询
+  SELECT * FROM studentinfo LIMIT 0,100;
+
+  ------ 联合查询
+  SELECT stu_id,stu_name,stu_sex,stu_num,stu_code 
+  FROM studentinfo
+  UNION
+  SELECT ALL FROM studentrecord;
+
+  Example01
+  SELECT stu_name,stu_num
+  FROM studentinfo
+  UNION
+  SELECT match_record,datasec_record
+  FROM studentrecord;
+
+
+  ------ 带条件查询
+  SELECT * FROM studentinfo LIMIT 0,100;
+  SELECT * 
+  FROM studentinfo 
+  WHERE stu_name = "黄三";
+  
+  ------ 模糊查询 LIKE
+  SELECT * FROM studentinfo LIMIT 0,100;
+  SELECT * 
+  FROM studentinfo 
+  WHERE stu_name LIKE "黄%";
+ 
+  SELECT * FROM studentinfo LIMIT 0,100;
+  SELECT * 
+  FROM studentinfo 
+  WHERE stu_name LIKE "%黄%";
+
+  ------ 排序 ORDER BY
+  SELECT field1, field2,...fieldN table_name1, table_name2...
+  ORDER BY field1 [ASC [DESC][默认 ASC]], [field2...] [ASC [DESC][默认 ASC]]
+   
+  SELECT stu_num,match_record,datasec_record
+  FROM studentrecord
+  WHERE match_record >= 90
+  ORDER BY match_record;
+
+  ------ 分组 GROUP BY
+  SELECT match_record,COUNT(*) datasec_record
+  FROM studentrecord
+  GROUP BY match_record;
+
+  --删除数据
+  DELETE FROM studentinfo WHERE stu_name = "黄三";
+  
+  --更新数据
+  UPDATE table_name SET field1=new-value1, field2=new-value2 [WHERE Clause]
+  UPDATE studentinfo 
+  SET stu_name="黄四" 
+  WHERE stu_name = "黄三";
+
+  /*****************************************/
+  /*****************************************/
+  --MYSQL注入
+  --https://websec.ca/kb/sql_injection
+
+  学生系统  -> 学生信息登录
+  
+  表单 $stu_num  = AT08908\
+  查询回来结果 result = SELECT * FROM studentinfo WHERE stu_num = '$stu_num';
+  SELECT * FROM studentinfo WHERE stu_num = 'AT08908\';
+ 
+  if  !empty(result)
+      登录成功
+  else
+      登录失败
+ 
+  学生系统  -> 成绩查询
+  表单 $match_record  = 90 AND 0;
+  查询回来结果 result = SELECT match_record FROM studentrecord WHERE match_record = $match_record;
+  result = SELECT COUNT(match_record) FROM studentrecord WHERE match_record = 90 AND 0;
+  
+  
+  学生系统  -> 登录页面
+  表单 $stu_num  = AT' or 1 =1 -- -
+  result = SELECT * FROM studentinfo WHERE stu_num = '$stu_num';
+  查询回来结果 SELECT * FROM studentinfo WHERE stu_num = 'AT' or 1 =1 -- -';
+
+  if  !empty(result)
+      登录成功
+  else
+      登录失败
+
+
+  1.通过 VERSION() ...获取数据库服务器版本
+  2.通过查询默认数据mysql和information_chema获取数据库用户信息及数据信息
+  3.通过order by 或者 group by 判断出当前表有多少列
+  4.通过Union查询或者报错查询、或者盲注进行获取表和列信息
+
+
+
+  学生成绩表
+  CREATE TABLE IF NOT EXISTS `studentrecord`(
+   `record_id` INT UNSIGNED AUTO_INCREMENT,
+   `stu_num` VARCHAR(100)NOT NULL,
+   `match_record` INT NOT NULL,
+   `datasec_record` INT NOT NULL,
+   PRIMARY KEY ( `record_id` )
+  )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+  
+  黑客大曝光
+  Kali Linux高级渗透测试（原书第2版） 
+  Kali Linux渗透测试技术详解 
+  Kali渗透测试技术实战
+
+  0x0001 主机远程ssh管理配置
+    Xshell
+  
+  0x0010 安装包上传到服务器  
+    运维主机向服务器上传安装包可以使用工具
+    putty PSCP
+    XFtp
+    lrzsz
+
+  0x0011
+    Mysql 安装 eJPGC6jw83+w
+
+  /*****************************************/
+  /*****************************************/
+  背景：某数据中心为了测试网络安全，特聘相关信息安全人员对我中心进行安全渗透测试
+        技术不限
+        该中心现处于局域网办公，在测试时发现该中心由于为了工作方便，私自设立了一个
+        WIFI热点，名字（数据安全中心）。
+  
+  渗透工具 ： 
+           信息收集 - NMAP（扫描当前连接上来）
+           定位到目标机器 - （特征：靶机一般是WEB服务器）
+           攻击靶机 - 手工测试WEB 十大漏洞 、KALI下使用WEB扫描工具攻击
+                      手工测试，御剑目录扫描器（扫描WEB服务器可能存在的隐藏目录）
+                     WhatWeb(kali下)、Burp Suite（kali下）
+                      kali（工具使用页面https://tools.kali.org/tools-listing）
+
+           拿下靶机器后获取FLAG和服务器权限 ： metasploit
+            
+           内网横向渗透：使用攻击下来的靶机作为跳板攻击内网其他机器
+
+   
+   渗透教程： GitHub搜索资源 
+              例如：https://github.com/w1109790800/penetration
+
+
